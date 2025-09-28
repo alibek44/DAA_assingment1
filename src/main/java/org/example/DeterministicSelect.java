@@ -4,17 +4,12 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class DeterministicSelect {
-    /**
-     * Returns the k-th smallest (0-based) element from the array.
-     * Does NOT fully sort the array.
-     */
     public static int select(int[] a, int k) {
         if (a == null || a.length == 0) throw new IllegalArgumentException("empty array");
         if (k < 0 || k >= a.length) throw new IllegalArgumentException("k out of range");
         return selectRange(a, 0, a.length - 1, k);
     }
 
-    // Iterative selection within a[l..r]
     private static int selectRange(int[] a, int l, int r, int k) {
         while (true) {
             if (l == r) return a[l];
@@ -28,7 +23,6 @@ public class DeterministicSelect {
         }
     }
 
-    /** Partition a[l..r] around a[pivotIndex]. Returns final index of the pivot. */
     private static int partition(int[] a, int l, int r, int pivotIndex) {
         int pivot = a[pivotIndex];
         swap(a, pivotIndex, r);
@@ -43,19 +37,13 @@ public class DeterministicSelect {
         return store;
     }
 
-    /**
-     * Deterministically pick a good pivot index using median-of-medians (groups of 5).
-     * Returns an index within [l..r].
-     */
     private static int medianOfMediansIndex(int[] a, int l, int r) {
         int n = r - l + 1;
         if (n <= 5) {
-            // sort the tiny block in-place and return median index
             insertionSort(a, l, r);
             return (l + r) / 2;
         }
 
-        // Collect medians of each 5-group
         int numGroups = (n + 4) / 5;
         int[] medians = new int[numGroups];
 
@@ -66,18 +54,14 @@ public class DeterministicSelect {
             medians[g] = a[(start + end) / 2];
         }
 
-        // Recursively find the median value of the medians array (OK to use deterministic select again)
         int momValue = selectValue(medians, 0, numGroups - 1, numGroups / 2);
 
-        // Return ANY index in [l..r] that has value == momValue
         for (int i = l; i <= r; i++) {
             if (a[i] == momValue) return i;
         }
-        // Fallback (shouldn't happen unless extreme duplicates with all not equal?):
         return l;
     }
 
-    // Deterministic select on a VALUE array (helper for medians)
     private static int selectValue(int[] a, int l, int r, int k) {
         while (true) {
             if (l == r) return a[l];
@@ -89,7 +73,6 @@ public class DeterministicSelect {
         }
     }
 
-    // Median-of-medians for the VALUE helper
     private static int medianOfMediansIndexValue(int[] a, int l, int r) {
         int n = r - l + 1;
         if (n <= 5) {
@@ -107,9 +90,8 @@ public class DeterministicSelect {
         return selectIndexValue(a, l, l + numGroups - 1, midIdx);
     }
 
-    // Returns INDEX (within [l..r]) of the k-th smallest (where k is an absolute index)
     private static int selectIndexValue(int[] a, int l, int r, int kAbs) {
-        int k = kAbs; // already absolute in this helper
+        int k = kAbs;
         while (true) {
             if (l == r) return l;
             int pivotIndex = medianOfMediansIndexValue(a, l, r);
@@ -120,7 +102,6 @@ public class DeterministicSelect {
         }
     }
 
-    // Partition for value helper
     private static int partitionValue(int[] a, int l, int r, int pivotIndex) {
         int pivot = a[pivotIndex];
         swap(a, pivotIndex, r);

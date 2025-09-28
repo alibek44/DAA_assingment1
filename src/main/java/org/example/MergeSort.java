@@ -6,7 +6,7 @@ public class MergeSort {
 
     public static void sort(int[] a) {
         if (a == null || a.length < 2) return;
-        int[] aux = new int[a.length];           // reusable buffer
+        int[] aux = new int[a.length];
         sort(a, aux, 0, a.length - 1);
     }
 

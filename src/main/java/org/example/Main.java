@@ -10,20 +10,16 @@ public class Main {
 
         System.out.println("Original array: " + Arrays.toString(arr1));
 
-        // 🔹 MergeSort
         MergeSort.sort(arr1);
         System.out.println("After MergeSort: " + Arrays.toString(arr1));
 
-        // 🔹 QuickSort
         QuickSort.sort(arr2);
         System.out.println("After QuickSort: " + Arrays.toString(arr2));
 
-        // 🔹 Deterministic Select (find median)
         int k = arr3.length / 2;
         int kthSmallest = DeterministicSelect.select(arr3.clone(), k);
         System.out.println("k = " + k + "th smallest element (Deterministic Select): " + kthSmallest);
 
-        // 🔹 Closest Pair of Points in 2D
         List<Point2D> pts = List.of(
                 new Point2D(0, 0),
                 new Point2D(3, 4),

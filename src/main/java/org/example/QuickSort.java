@@ -8,7 +8,6 @@ public class QuickSort {
     public static void sort(int[] arr) {
         quickSort(arr, 0, arr.length - 1);
     }
-
     private static void quickSort(int[] arr, int lo, int hi) {
         while (lo < hi) {
             int pivotIndex = lo + RNG.nextInt(hi - lo + 1);
@@ -17,10 +16,9 @@ public class QuickSort {
 
             int p = partition(arr, lo, hi, pivot);
 
-            // recurse into smaller partition
             if (p - lo < hi - p) {
                 quickSort(arr, lo, p - 1);
-                lo = p + 1; // tail recursion
+                lo = p + 1;
             } else {
                 quickSort(arr, p + 1, hi);
                 hi = p - 1;
