@@ -1,4 +1,3 @@
 package org.example;
 
-public class Point2D {
-}
+public record Point2D(double x, double y) {}
