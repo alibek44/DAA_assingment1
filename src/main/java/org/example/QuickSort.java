@@ -5,40 +5,45 @@ import java.util.Random;
 public class QuickSort {
     private static final Random RNG = new Random(42);
 
-    public static void sort(int[] arr) {
-        quickSort(arr, 0, arr.length - 1);
+    public static void sort(int[] a) { sort(a, new Metrics()); }
+
+    public static void sort(int[] a, Metrics m) {
+        m.startTimer();
+        m.enter();
+        qsort(a, 0, a.length - 1, m);
+        m.exit();
+        m.stopTimer();
     }
-    private static void quickSort(int[] arr, int lo, int hi) {
+
+    private static void qsort(int[] a, int lo, int hi, Metrics m) {
         while (lo < hi) {
-            int pivotIndex = lo + RNG.nextInt(hi - lo + 1);
-            int pivot = arr[pivotIndex];
-            swap(arr, pivotIndex, hi);
+            int pIdx = lo + RNG.nextInt(hi - lo + 1);
+            int pivot = a[pIdx];
+            m.addMove(); // read pivot proxy
+            m.swap(a, pIdx, hi);
 
-            int p = partition(arr, lo, hi, pivot);
+            int p = partition(a, lo, hi, pivot, m);
 
-            if (p - lo < hi - p) {
-                quickSort(arr, lo, p - 1);
-                lo = p + 1;
+            // recurse into smaller side
+            if (p - 1 - lo < hi - (p + 1)) {
+                m.enter(); qsort(a, lo, p - 1, m); m.exit();
+                lo = p + 1; // tail recursion elimination
             } else {
-                quickSort(arr, p + 1, hi);
+                m.enter(); qsort(a, p + 1, hi, m); m.exit();
                 hi = p - 1;
             }
         }
     }
 
-    private static int partition(int[] arr, int lo, int hi, int pivot) {
+    private static int partition(int[] a, int lo, int hi, int pivot, Metrics m) {
         int i = lo - 1;
         for (int j = lo; j < hi; j++) {
-            if (arr[j] <= pivot) {
+            if (m.leq(a[j], pivot)) {
                 i++;
-                swap(arr, i, j);
+                m.swap(a, i, j);
             }
         }
-        swap(arr, i + 1, hi);
+        m.swap(a, i + 1, hi);
         return i + 1;
-    }
-
-    private static void swap(int[] arr, int i, int j) {
-        int t = arr[i]; arr[i] = arr[j]; arr[j] = t;
     }
 }

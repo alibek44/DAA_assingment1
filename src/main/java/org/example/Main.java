@@ -1,33 +1,46 @@
 package org.example;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        int[] arr1 = {5, 3, 8, 1, 9, 2};
-        int[] arr2 = arr1.clone();
-        int[] arr3 = arr1.clone();
+        int n = 1_000;
+        int[] base = new Random(7).ints(n, -1_000_000, 1_000_000).toArray();
 
-        System.out.println("Original array: " + Arrays.toString(arr1));
+        CsvWriter csv = new CsvWriter("out/metrics.csv");
 
-        MergeSort.sort(arr1);
-        System.out.println("After MergeSort: " + Arrays.toString(arr1));
+        // ---- MergeSort
+        int[] a1 = base.clone();
+        Metrics m1 = new Metrics();
+        MergeSort.sort(a1, m1);
+        writeRow(csv, "MergeSort", n, m1, Arrays.equals(a1, sorted(base)));
 
-        QuickSort.sort(arr2);
-        System.out.println("After QuickSort: " + Arrays.toString(arr2));
+        // ---- QuickSort
+        int[] a2 = base.clone();
+        Metrics m2 = new Metrics();
+        QuickSort.sort(a2, m2);
+        writeRow(csv, "QuickSort", n, m2, Arrays.equals(a2, sorted(base)));
 
-        int k = arr3.length / 2;
-        int kthSmallest = DeterministicSelect.select(arr3.clone(), k);
-        System.out.println("k = " + k + "th smallest element (Deterministic Select): " + kthSmallest);
+        System.out.println("Done. CSV at out/metrics.csv");
+    }
 
-        List<Point2D> pts = List.of(
-                new Point2D(0, 0),
-                new Point2D(3, 4),
-                new Point2D(5, 1),
-                new Point2D(1, 1),
-                new Point2D(7, 2)
-        );
-        double d = ClosestPair2D.solve(pts);
-        System.out.println("Closest pair distance = " + d);
+    private static void writeRow(CsvWriter csv, String algo, int n, Metrics m, boolean ok) {
+        var row = new LinkedHashMap<String, String>();
+        row.put("algo", algo);
+        row.put("n", Integer.toString(n));
+        row.put("elapsed_ns", Long.toString(m.elapsedNanos()));
+        row.put("comparisons", Long.toString(m.getComparisons()));
+        row.put("moves", Long.toString(m.getMoves()));
+        row.put("max_depth", Integer.toString(m.maxDepth()));
+        row.put("ok", Boolean.toString(ok));
+        csv.appendRow(row);
+    }
+
+    private static int[] sorted(int[] x) {
+        int[] c = x.clone();
+        Arrays.sort(c);
+        return c;
     }
 }

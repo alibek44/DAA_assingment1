@@ -1,53 +1,56 @@
 package org.example;
-import java.util.Arrays;
+
 public class MergeSort {
+    private static final int INSERTION_CUTOFF = 32;
 
-    private static final int CUTOFF = 16;
-
-    public static void sort(int[] a) {
-        if (a == null || a.length < 2) return;
-        int[] aux = new int[a.length];
-        sort(a, aux, 0, a.length - 1);
+    public static void sort(int[] arr) {
+        sort(arr, new Metrics());
     }
 
-    private static void sort(int[] a, int[] aux, int lo, int hi) {
-        if (hi - lo + 1 <= CUTOFF) {
-            insertionSort(a, lo, hi);
+    public static void sort(int[] arr, Metrics m) {
+        m.startTimer();
+        int[] buf = new int[arr.length];
+        m.enter();
+        sort(arr, 0, arr.length, buf, m);
+        m.exit();
+        m.stopTimer();
+    }
+
+    private static void sort(int[] a, int lo, int hi, int[] buf, Metrics m) {
+        int n = hi - lo;
+        if (n <= 1) return;
+
+        if (n <= INSERTION_CUTOFF) {
+            insertion(a, lo, hi, m);
             return;
         }
 
-        int mid = lo + (hi - lo) / 2;
-        sort(a, aux, lo, mid);
-        sort(a, aux, mid + 1, hi);
-
-        if (a[mid] <= a[mid + 1]) return;
-
-        mergeLinear(a, aux, lo, mid, hi);
+        int mid = lo + n / 2;
+        m.enter(); sort(a, lo,  mid, buf, m); m.exit();
+        m.enter(); sort(a, mid, hi,  buf, m); m.exit();
+        merge(a, lo, mid, hi, buf, m);
     }
 
-    private static void mergeLinear(int[] a, int[] aux, int lo, int mid, int hi) {
-        int i = lo, j = mid + 1, k = lo;
-
-        while (i <= mid && j <= hi) {
-            if (a[i] <= a[j]) aux[k++] = a[i++];
-            else              aux[k++] = a[j++];
-        }
-        while (i <= mid) aux[k++] = a[i++];
-        while (j <= hi)  aux[k++] = a[j++];
-
-        System.arraycopy(aux, lo, a, lo, hi - lo + 1);
-    }
-
-    private static void insertionSort(int[] a, int lo, int hi) {
-        for (int i = lo + 1; i <= hi; i++) {
-            int key = a[i];
+    private static void insertion(int[] a, int lo, int hi, Metrics m) {
+        for (int i = lo + 1; i < hi; i++) {
+            int key = a[i]; m.addMove(); // read-to-temp proxy
             int j = i - 1;
-            while (j >= lo && a[j] > key) {
-                a[j + 1] = a[j];
+            while (j >= lo && m.lt(key, a[j])) { // count compare
+                m.write(a, j + 1, a[j]);         // shift
                 j--;
             }
-            a[j + 1] = key;
+            m.write(a, j + 1, key);
         }
     }
 
+    private static void merge(int[] a, int lo, int mid, int hi, int[] buf, Metrics m) {
+        int i = lo, j = mid, k = 0;
+        while (i < mid && j < hi) {
+            if (m.leq(a[i], a[j])) { buf[k++] = a[i++]; m.addMove(); }
+            else                    { buf[k++] = a[j++]; m.addMove(); }
+        }
+        while (i < mid) { buf[k++] = a[i++]; m.addMove(); }
+        while (j < hi)  { buf[k++] = a[j++]; m.addMove(); }
+        for (int t = 0; t < k; t++) { m.write(a, lo + t, buf[t]); }
+    }
 }
